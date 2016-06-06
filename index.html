@@ -365,16 +365,16 @@
       
         
           
-            <h1 id="推荐使用WKWebView"><a href="#推荐使用WKWebView" class="headerlink" title="#推荐使用WKWebView"></a>#推荐使用WKWebView</h1><blockquote>
+            <h1 id="推荐使用WKWebView"><a href="#推荐使用WKWebView" class="headerlink" title="推荐使用WKWebView"></a>推荐使用WKWebView</h1><blockquote>
 <p>WKWebView 是苹果在 iOS 8 中引入的新组件，目的是给出一个新的高性能的 Web View 解决方案，摆脱过去 UIWebView 的老旧笨重特别是内存占用量巨大的问题。苹果将 UIWebViewDelegate 与 UIWebView 重构成了 14 个类和 3 个协议，引入了不少新的功能和接口。</p>
 </blockquote>
-<h2 id="WKWebView准备工作"><a href="#WKWebView准备工作" class="headerlink" title="###WKWebView准备工作"></a>###WKWebView准备工作</h2><p><pre><code>#import <webkit webkit.h=""></webkit></code></pre></p>
+<h2 id="WKWebView准备工作"><a href="#WKWebView准备工作" class="headerlink" title="WKWebView准备工作"></a>WKWebView准备工作</h2><p><pre><code>#import <webkit webkit.h=""></webkit></code></pre></p>
 <p>@interface ViewController () <wkscriptmessagehandler, wknavigationdelegate,="" wkuidelegate=""></wkscriptmessagehandler,></p>
 <p>@end<br></p>
-<p>###在创建WKWebView之前,我们先做配置操作<br>这边就需要用到WKWebViewConfiguration</p>
+<h2 id="在创建WKWebView之前-我们先做配置操作"><a href="#在创建WKWebView之前-我们先做配置操作" class="headerlink" title="在创建WKWebView之前,我们先做配置操作"></a>在创建WKWebView之前,我们先做配置操作</h2><hr>
+<p>这边就需要用到WKWebViewConfiguration</p>
 <p><pre><code> WKWebViewConfiguration *config  =[[WKWebViewConfiguration alloc] init];<br></code></pre></p>
-<p>###交互需要利用WKUserContentController</p>
-<p>这个类是用来给JS注入对象的,对象是和网页端一起约定好的。<br>config.userContentController = [[WKUserContentController alloc] init];<br>例如我们现在约定使用sendInfoModel这个对象,那么:</p>
+<h2 id="交互需要利用WKUserContentController"><a href="#交互需要利用WKUserContentController" class="headerlink" title="交互需要利用WKUserContentController"></a>交互需要利用WKUserContentController</h2><p>这个类是用来给JS注入对象的,对象是和网页端一起约定好的。<br>config.userContentController = [[WKUserContentController alloc] init];<br>例如我们现在约定使用sendInfoModel这个对象,那么:</p>
 <ul>
 <li>OC中,给JS注入对象:<br><pre><code><br>[config.userContentController addScriptMessageHandler:self name:@”sendInfoModel”];<br></code></pre></li>
 <li>JS中,使用对象:<br>这是JS的一个传值操作,通过body来传值。<br><pre><code><br>window.webkit.messageHandlers.sendInfoModel.postMessage({body: ‘JS要传值’});<br></code></pre></li>
@@ -383,15 +383,14 @@
 <p>if ([message.name isEqualToString:@”sendInfoModel”]) {<br>// 打印所传过来的参数，只支持NSNumber, NSString, NSDate, NSArray,NSDictionary, and NSNull类</p>
 <p>NSLog(@%@”, message.body);</p>
 <p>}<br>}<br></p>
-<p>###下面利用上面的WKWebViewConfiguration *config配置构造器来创建KWWebView</p>
-<p><pre><code><br>self.webView = [[WKWebView alloc] initWithFrame:self.view.bounds configuration:config];</code></pre></p>
+<h2 id="下面利用上面的WKWebViewConfiguration-config配置构造器来创建KWWebView"><a href="#下面利用上面的WKWebViewConfiguration-config配置构造器来创建KWWebView" class="headerlink" title="下面利用上面的WKWebViewConfiguration *config配置构造器来创建KWWebView"></a>下面利用上面的WKWebViewConfiguration *config配置构造器来创建KWWebView</h2><p><pre><code><br>self.webView = [[WKWebView alloc] initWithFrame:self.view.bounds configuration:config];</code></pre></p>
 <p>NSURL *path = [[NSBundle mainBundle] URLForResource:@”test” withExtension:@”html”];</p>
 <p>[self.webView loadRequest:[NSURLRequest requestWithURL:path]];</p>
 <p>[self.view addSubview:self.webView];<br></p>
 <ul>
 <li>WKWebView的title(标题), loading(BOOL,是否在加载), estimatedProgress(加载进度),可以用KVO来监听,进行一些细节操作(进度条啥的)。</li>
 </ul>
-<p>###WKWebView在请求开始前会调用下面这个代理方法:<br>-webView:webView decidePolicyForNavigationAction:navigationAction  decisionHandler:decisionHandler</p>
+<h2 id="WKWebView在请求开始前会调用下面这个代理方法"><a href="#WKWebView在请求开始前会调用下面这个代理方法" class="headerlink" title="WKWebView在请求开始前会调用下面这个代理方法:"></a>WKWebView在请求开始前会调用下面这个代理方法:</h2><p>-webView:webView decidePolicyForNavigationAction:navigationAction  decisionHandler:decisionHandler</p>
 <ul>
 <li>navigationAction决定是否让一个网页被加载,我们检查它的navigationType和request这两个属性;</li>
 <li>navigationType 枚举值,UIWebViewNavigationTypeLinkClicked为点击链接操作;</li>
@@ -410,18 +409,16 @@
 <p>self.progressView.alpha = 1.0;//(显示进度条)</p>
 <p>decisionHandler(WKNavigationActionPolicyAllow);<br>}</p>
 <p>}<br></p>
-<p>###KWWebView完成响应</p>
-<p><pre><code>-(void)webView:(WKWebView <em>)webView<br>decidePolicyForNavigationResponse:(WKNavigationResponse </em>)navigationResponse<br>decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler</code></pre></p>
+<h2 id="KWWebView完成响应"><a href="#KWWebView完成响应" class="headerlink" title="KWWebView完成响应"></a>KWWebView完成响应</h2><p><pre><code>-(void)webView:(WKWebView <em>)webView<br>decidePolicyForNavigationResponse:(WKNavigationResponse </em>)navigationResponse<br>decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler</code></pre></p>
 <p>{<br>//允许响应</p>
 <p>decisionHandler(WKNavigationResponsePolicyAllow);</p>
 <p>//若为不允许响应,那么web内容就传不过来</p>
 <p>}<br></p>
-<p>###针对HTTPS协议的链接,加载时都会触发以下方法来验证证书(操作与使用AFN进行HTTPS验证证书一样)</p>
-<p><pre><code>-(void)webView:(WKWebView <em>)webView didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge </em>)challenge completionHandler:<br>(void (^)(NSURLSessionAuthChallengeDisposition disposition,<br>NSURLCredential *__nullable credential))completionHandler </code></pre></p>
+<h2 id="针对HTTPS协议的链接-加载时都会触发以下方法来验证证书-操作与使用AFN进行HTTPS验证证书一样"><a href="#针对HTTPS协议的链接-加载时都会触发以下方法来验证证书-操作与使用AFN进行HTTPS验证证书一样" class="headerlink" title="针对HTTPS协议的链接,加载时都会触发以下方法来验证证书(操作与使用AFN进行HTTPS验证证书一样)"></a>针对HTTPS协议的链接,加载时都会触发以下方法来验证证书(操作与使用AFN进行HTTPS验证证书一样)</h2><p><pre><code>-(void)webView:(WKWebView <em>)webView didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge </em>)challenge completionHandler:<br>(void (^)(NSURLSessionAuthChallengeDisposition disposition,<br>NSURLCredential *__nullable credential))completionHandler </code></pre></p>
 <p>{</p>
 <p>//如不需要验证传默认的就可以</p>
 <p>completionHandler(NSURLSessionAuthChallengePerformDefaultHandling, nil);<br>}<br></p>
-<p>###WKUIDelegate<br>与JS原生的alert,confirm,prompt进行交互:</p>
+<h2 id="WKUIDelegate"><a href="#WKUIDelegate" class="headerlink" title="WKUIDelegate"></a>WKUIDelegate</h2><p>与JS原生的alert,confirm,prompt进行交互:</p>
 <ul>
 <li>alert :<br>JS中:<br><pre><code><br>function callJsAlert() {<br>alert(‘这个是OC调用JS的方法,并且通过Alert()进行显示出来!’);</code></pre></li>
 </ul>
