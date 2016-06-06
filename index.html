@@ -371,10 +371,10 @@
 <h2 id="WKWebView准备工作"><a href="#WKWebView准备工作" class="headerlink" title="WKWebView准备工作"></a>WKWebView准备工作</h2><p><pre><code>#import <webkit webkit.h=""></webkit></code></pre></p>
 <p>@interface ViewController () <wkscriptmessagehandler, wknavigationdelegate,="" wkuidelegate=""></wkscriptmessagehandler,></p>
 <p>@end<br></p>
-<h2 id="在创建WKWebView之前-我们先做配置操作"><a href="#在创建WKWebView之前-我们先做配置操作" class="headerlink" title="在创建WKWebView之前,我们先做配置操作"></a>在创建WKWebView之前,我们先做配置操作</h2><hr>
-<p>这边就需要用到WKWebViewConfiguration</p>
+<h2 id="在创建WKWebView之前-我们先做配置操作"><a href="#在创建WKWebView之前-我们先做配置操作" class="headerlink" title="在创建WKWebView之前,我们先做配置操作"></a>在创建WKWebView之前,我们先做配置操作</h2><p>这边就需要用到WKWebViewConfiguration</p>
 <p><pre><code> WKWebViewConfiguration *config  =[[WKWebViewConfiguration alloc] init];<br></code></pre></p>
-<h2 id="交互需要利用WKUserContentController"><a href="#交互需要利用WKUserContentController" class="headerlink" title="交互需要利用WKUserContentController"></a>交互需要利用WKUserContentController</h2><p>这个类是用来给JS注入对象的,对象是和网页端一起约定好的。<br>config.userContentController = [[WKUserContentController alloc] init];<br>例如我们现在约定使用sendInfoModel这个对象,那么:</p>
+<h2 id="交互需要利用WKUserContentController"><a href="#交互需要利用WKUserContentController" class="headerlink" title="交互需要利用WKUserContentController"></a>交互需要利用WKUserContentController</h2><p>这个类是用来给JS注入对象的,对象是和网页端一起约定好的。</p>
+<p><pre><code>config.userContentController = [[WKUserContentController alloc] init];<br></code></pre><br>例如我们现在约定使用sendInfoModel这个对象,那么:</p>
 <ul>
 <li>OC中,给JS注入对象:<br><pre><code><br>[config.userContentController addScriptMessageHandler:self name:@”sendInfoModel”];<br></code></pre></li>
 <li>JS中,使用对象:<br>这是JS的一个传值操作,通过body来传值。<br><pre><code><br>window.webkit.messageHandlers.sendInfoModel.postMessage({body: ‘JS要传值’});<br></code></pre></li>
@@ -564,7 +564,7 @@
       
         
           
-            <p>2016.7.4还没到,先写一个看看</p>
+            <p>一言不合就开车,快上车,来不及解释了。</p>
 
           
         
