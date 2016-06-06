@@ -4,6 +4,97 @@
   
     
     <entry>
+      <title><![CDATA[iOS与JS交互]]></title>
+      <url>https://dogtwochen.github.io/2016/06/06/iOS%E4%B8%8EJS%E4%BA%A4%E4%BA%92/</url>
+      <content type="html"><![CDATA[<p>#推荐使用WKWebView</p>
+<blockquote>
+<p>WKWebView 是苹果在 iOS 8 中引入的新组件，目的是给出一个新的高性能的 Web View 解决方案，摆脱过去 UIWebView 的老旧笨重特别是内存占用量巨大的问题。苹果将 UIWebViewDelegate 与 UIWebView 重构成了 14 个类和 3 个协议，引入了不少新的功能和接口。</p>
+</blockquote>
+<p>###WKWebView准备工作</p>
+<p><pre><code>#import <webkit webkit.h=""></webkit></code></pre></p>
+<p>@interface ViewController () <wkscriptmessagehandler, wknavigationdelegate,="" wkuidelegate=""></wkscriptmessagehandler,></p>
+<p>@end<br></p>
+<p>###在创建WKWebView之前,我们先做配置操作<br>这边就需要用到WKWebViewConfiguration</p>
+<p><pre><code> WKWebViewConfiguration *config  =[[WKWebViewConfiguration alloc] init];<br></code></pre></p>
+<p>###交互需要利用WKUserContentController</p>
+<p>这个类是用来给JS注入对象的,对象是和网页端一起约定好的。<br>config.userContentController = [[WKUserContentController alloc] init];<br>例如我们现在约定使用sendInfoModel这个对象,那么:</p>
+<ul>
+<li>OC中,给JS注入对象:<br><pre><code><br>[config.userContentController addScriptMessageHandler:self name:@”sendInfoModel”];<br></code></pre></li>
+<li>JS中,使用对象:<br>这是JS的一个传值操作,通过body来传值。<br><pre><code><br>window.webkit.messageHandlers.sendInfoModel.postMessage({body: ‘JS要传值’});<br></code></pre></li>
+<li>当JS通过sendInfoModel传值的时候,在iOS端,我们在下面的这个代理中接受结果:<br><pre><code>- (void)userContentController:(WKUserContentController <em>)userContentController didReceiveScriptMessage:(WKScriptMessage </em>)message {<br>//首先判断一下是哪个对象(我们可以注入多个不同的对象,来进行不同的操作)</code></pre></li>
+</ul>
+<p>if ([message.name isEqualToString:@”sendInfoModel”]) {<br>// 打印所传过来的参数，只支持NSNumber, NSString, NSDate, NSArray,NSDictionary, and NSNull类</p>
+<p>NSLog(@%@”, message.body);</p>
+<p>}<br>}<br></p>
+<p>###下面利用上面的WKWebViewConfiguration *config配置构造器来创建KWWebView</p>
+<p><pre><code><br>self.webView = [[WKWebView alloc] initWithFrame:self.view.bounds configuration:config];</code></pre></p>
+<p>NSURL *path = [[NSBundle mainBundle] URLForResource:@”test” withExtension:@”html”];</p>
+<p>[self.webView loadRequest:[NSURLRequest requestWithURL:path]];</p>
+<p>[self.view addSubview:self.webView];<br></p>
+<ul>
+<li>WKWebView的title(标题), loading(BOOL,是否在加载), estimatedProgress(加载进度),可以用KVO来监听,进行一些细节操作(进度条啥的)。</li>
+</ul>
+<p>###WKWebView在请求开始前会调用下面这个代理方法:<br>-webView:webView decidePolicyForNavigationAction:navigationAction  decisionHandler:decisionHandler</p>
+<ul>
+<li>navigationAction决定是否让一个网页被加载,我们检查它的navigationType和request这两个属性;</li>
+<li>navigationType 枚举值,UIWebViewNavigationTypeLinkClicked为点击链接操作;</li>
+<li>request用来确定它是否是外部链接。</li>
+</ul>
+<p><pre><code>- (void)webView:(WKWebView <em>)webView decidePolicyForNavigationAction:(WKNavigationAction </em>)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler </code></pre></p>
+<p>{</p>
+<p>NSString *hostname = navigationAction.request.URL.host.lowercaseString;</p>
+<p>if (navigationAction.navigationType == WKNavigationTypeLinkActivated<br>&amp;&amp; ![hostname containsString:@”.lanou.com”])</p>
+<p>{<br>// 对于跨域，需要手动跳转<br>[[UIApplication sharedApplication] openURL:navigationAction.request.URL];</p>
+<p>// 不允许web内跳转</p>
+<p>decisionHandler(WKNavigationActionPolicyCancel);</p>
+<p>} else </p>
+<p>{</p>
+<p>//允许web内跳转</p>
+<p>self.progressView.alpha = 1.0;//(显示进度条)</p>
+<p>decisionHandler(WKNavigationActionPolicyAllow);<br>}</p>
+<p>}<br></p>
+<p>###KWWebView完成响应</p>
+<p><pre><code>-(void)webView:(WKWebView <em>)webView<br>decidePolicyForNavigationResponse:(WKNavigationResponse </em>)navigationResponse<br>decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler</code></pre></p>
+<p>{<br>//允许响应</p>
+<p>decisionHandler(WKNavigationResponsePolicyAllow);</p>
+<p>//若为不允许响应,那么web内容就传不过来</p>
+<p>}<br></p>
+<p>###针对HTTPS协议的链接,加载时都会触发以下方法来验证证书(操作与使用AFN进行HTTPS验证证书一样)</p>
+<p><pre><code>-(void)webView:(WKWebView <em>)webView didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge </em>)challenge completionHandler:<br>(void (^)(NSURLSessionAuthChallengeDisposition disposition,<br>NSURLCredential *__nullable credential))completionHandler </code></pre></p>
+<p>{</p>
+<p>//如不需要验证传默认的就可以</p>
+<p>completionHandler(NSURLSessionAuthChallengePerformDefaultHandling, nil);<br>}<br></p>
+<p>###WKUIDelegate<br>与JS原生的alert,confirm,prompt进行交互:</p>
+<ul>
+<li>alert :<br>JS中:<br><pre><code><br>function callJsAlert() {<br>alert(‘这个是OC调用JS的方法,并且通过Alert()进行显示出来!’);</code></pre></li>
+</ul>
+<p>window.webkit.messageHandlers.sendInfoModel.postMessage({body: ‘在JS中调用JS alert中方法’});<br>}<br><br>OC中: 当JS调用alert时会触发此方法</p>
+<p><pre><code>- (void)webView:(WKWebView <em>)webView runJavaScriptAlertPanelWithMessage:(NSString </em>)message<br>initiatedByFrame:(WKFrameInfo <em>)frame completionHandler:(void (^)(void))completionHandler<br>{<br>UIAlertController </em>alert = [UIAlertController alertControllerWithTitle:@”alert” message:@”JS调用alert” preferredStyle:UIAlertControllerStyleAlert];<br>[alert addAction:[UIAlertAction actionWithTitle:@”确定” style: UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {<br>completionHandler();<br>}]];</code></pre></p>
+<p>[self presentViewController:alert animated:YES completion:NULL];<br>NSLog(@”%@”, message);<br>}<br></p>
+<ul>
+<li>confirm</li>
+<li>prompt</li>
+</ul>
+<p>与alert相似</p>
+<p>JS中:</p>
+<p><pre><code><br>function callJsConfirm() {<br>if (confirm(‘confirm’, ‘Objective-C call js to show confirm’)) {<br>document.getElementById(‘jsParamFuncSpan’).innerHTML<br>= ‘true’;<br>// sendInfoModel是我们所注入的对象<br>window.webkit.messageHandlers.sendInfoModel.postMessage({body: ‘我是JS里面的内容’});//传值<br>} else {<br>document.getElementById(‘jsParamFuncSpan’).innerHTML<br>= ‘false’;<br>}</code></pre></p>
+<p>}</p>
+<p>function callJsInput() {<br>var response = prompt(‘Hello’, ‘请输入你的名字:’);<br>document.getElementById(‘jsParamFuncSpan’).innerHTML = response;</p>
+<p>// sendInfoModel是我们所注入的对象<br>window.webkit.messageHandlers.sendInfoModel.postMessage({body: response});<br>}<br></p>
+<p>OC中:</p>
+<p><pre><code>- (void)webView:(WKWebView <em>)webView<br>runJavaScriptConfirmPanelWithMessage:(NSString </em>)message<br>initiatedByFrame:(WKFrameInfo *)frame<br>completionHandler:(void (^)(BOOL result))completionHandler</code></pre></p>
+<p>{</p>
+<p>UIAlertController <em>alert = [UIAlertController alertControllerWithTitle:<br>@”confirm” message:@”JS调用confirm”<br>preferredStyle:UIAlertControllerStyleAlert];<br>[alert addAction:[UIAlertAction actionWithTitle:@”确定”<br>style:UIAlertActionStyleDefault handler:^(UIAlertAction </em> _Nonnull action){<br>completionHandler(YES);<br>}]];<br>[alert addAction:[UIAlertAction actionWithTitle:@”取消”<br>style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {<br>completionHandler(NO);<br>}]];<br>[self presentViewController:alert animated:YES completion:NULL];<br>NSLog(@”%@”, message);</p>
+<p>}</p>
+<p>-(void)webView:(WKWebView <em>)webView<br>runJavaScriptTextInputPanelWithPrompt:(NSString </em>)prompt<br>defaultText:(nullable NSString <em>)defaultText<br>initiatedByFrame:(WKFrameInfo </em>)frame<br>completionHandler:(void (^)(NSString * __nullable result))completionHandler</p>
+<p>{</p>
+<p>NSLog(@”%@”, prompt);<br>UIAlertController <em>alert = [UIAlertController alertControllerWithTitle:<br>@”textinput” message:@”JS调用输入框”<br>preferredStyle:UIAlertControllerStyleAlert];<br>[alert addTextFieldWithConfigurationHandler:^(UITextField </em> _Nonnull textField) {<br>textField.textColor = [UIColor redColor];<br>}];<br>[alert addAction:[UIAlertAction actionWithTitle:@”确定”<br>style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {<br>completionHandler([[alert.textFields lastObject] text]);<br>}]];</p>
+<p>[self presentViewController:alert animated:YES completion:NULL];</p>
+<p>}<br></p>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[2016.7.4游记]]></title>
       <url>https://dogtwochen.github.io/2016/06/03/2016-7-4%E6%B8%B8%E8%AE%B0/</url>
       <content type="html"><![CDATA[<p>2016.7.4还没到,先写一个看看</p>
