@@ -276,9 +276,9 @@
 <h2 id="交互需要利用WKUserContentController"><a href="#交互需要利用WKUserContentController" class="headerlink" title="交互需要利用WKUserContentController"></a>交互需要利用WKUserContentController</h2><p>这个类是用来给JS注入对象的,对象是和网页端一起约定好的。</p>
 <p><pre><code>config.userContentController = [[WKUserContentController alloc] init];<br></code></pre><br>例如我们现在约定使用sendInfoModel这个对象,那么:</p>
 <ul>
-<li>OC中,给JS注入对象:<br><pre><code><br>[config.userContentController addScriptMessageHandler:self name:@”sendInfoModel”];<br></code></pre></li>
-<li>JS中,使用对象:<br>这是JS的一个传值操作,通过body来传值。<br><pre><code><br>window.webkit.messageHandlers.sendInfoModel.postMessage({body: ‘JS要传值’});<br></code></pre></li>
-<li>当JS通过sendInfoModel传值的时候,在iOS端,我们在下面的这个代理中接受结果:<br><pre><code>- (void)userContentController:(WKUserContentController <em>)userContentController didReceiveScriptMessage:(WKScriptMessage </em>)message {<br>//首先判断一下是哪个对象(我们可以注入多个不同的对象,来进行不同的操作)</code></pre></li>
+<li>OC中,给JS注入对象:<br><pre><code>[config.userContentController addScriptMessageHandler:self name:@”sendInfoModel”];<br></code></pre></li>
+<li>JS中,使用对象:<br>这是JS的一个传值操作,通过body来传值。<br><pre><code>window.webkit.messageHandlers.sendInfoModel.postMessage({body: ‘JS要传值’});<br></code></pre></li>
+<li>当JS通过sendInfoModel传值的时候,在iOS端,我们在下面的这个代理中接受结果:<br><pre><code>-(void)userContentController:(WKUserContentController <em>)userContentController didReceiveScriptMessage:(WKScriptMessage </em>)message {<br>//首先判断一下是哪个对象(我们可以注入多个不同的对象,来进行不同的操作)</code></pre></li>
 </ul>
 <p>if ([message.name isEqualToString:@”sendInfoModel”]) {<br>// 打印所传过来的参数，只支持NSNumber, NSString, NSDate, NSArray,NSDictionary, and NSNull类</p>
 <p>NSLog(@%@”, message.body);</p>
@@ -320,7 +320,7 @@
 <p>completionHandler(NSURLSessionAuthChallengePerformDefaultHandling, nil);<br>}<br></p>
 <h2 id="WKUIDelegate"><a href="#WKUIDelegate" class="headerlink" title="WKUIDelegate"></a>WKUIDelegate</h2><p>与JS原生的alert,confirm,prompt进行交互:</p>
 <ul>
-<li>alert :<br>JS中:<br><pre><code><br>function callJsAlert() {<br>alert(‘这个是OC调用JS的方法,并且通过Alert()进行显示出来!’);</code></pre></li>
+<li>alert :<br>JS中:<br><pre><code>function callJsAlert() {<br>alert(‘这个是OC调用JS的方法,并且通过Alert()进行显示出来!’);</code></pre></li>
 </ul>
 <p>window.webkit.messageHandlers.sendInfoModel.postMessage({body: ‘在JS中调用JS alert中方法’});<br>}<br><br>OC中: 当JS调用alert时会触发此方法</p>
 <p><pre><code>- (void)webView:(WKWebView <em>)webView runJavaScriptAlertPanelWithMessage:(NSString </em>)message<br>initiatedByFrame:(WKFrameInfo <em>)frame completionHandler:(void (^)(void))completionHandler<br>{<br>UIAlertController </em>alert = [UIAlertController alertControllerWithTitle:@”alert” message:@”JS调用alert” preferredStyle:UIAlertControllerStyleAlert];<br>[alert addAction:[UIAlertAction actionWithTitle:@”确定” style: UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {<br>completionHandler();<br>}]];</code></pre></p>
