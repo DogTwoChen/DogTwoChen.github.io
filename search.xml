@@ -4,6 +4,13 @@
   
     
     <entry>
+      <title><![CDATA[photos]]></title>
+      <url>https://dogtwochen.github.io/2016/06/07/photos/</url>
+      <content type="html"><![CDATA[<p><link type="text/css" href="/fancybox/jquery.fancybox.css" rel="stylesheet"></p>
+<div class="instagram"><br><section class="archives album"><br><ul class="img-box-ul"></ul><br></section><br></div>]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[将hexoBlog迁移到windows上去]]></title>
       <url>https://dogtwochen.github.io/2016/06/06/%E5%B0%86hexoBlog%E8%BF%81%E7%A7%BB%E5%88%B0windows%E4%B8%8A%E5%8E%BB/</url>
       <content type="html"><![CDATA[<p>今晚尝试了一下将hexoBlog放到windows上面，达到Mac OS与Windows双端对个人博客进行更新。</p>
